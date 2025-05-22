@@ -6,7 +6,7 @@ This script downloads MP3 files from a Telegram channel, removes duplicates,
 renames them chronologically, transcribes them using AssemblyAI, and uploads
 the transcriptions to Google Docs.
 
-Author: Your Name
+Author: Abdoulaye B.
 License: MIT
 """
 
