@@ -60,7 +60,8 @@ class AudioTranscriber:
     
     def calculate_md5(self, file_path):
         """Calculate MD5 hash of a file to detect duplicates."""
-        hash_md5 = hashlib.md5()
+        # Using MD5 for file deduplication only, not for security purposes
+        hash_md5 = hashlib.md5(usedforsecurity=False)  # nosec B324
         try:
             with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
@@ -116,7 +117,7 @@ class AudioTranscriber:
             headers = {"authorization": self.config['assemblyai']['api_key']}
             
             with open(file_path, "rb") as f:
-                response = requests.post(upload_endpoint, headers=headers, data=f)
+                response = requests.post(upload_endpoint, headers=headers, data=f, timeout=300)
             
             if response.status_code != 200:
                 logger.error(f"Upload failed: {response.text}")
@@ -131,7 +132,7 @@ class AudioTranscriber:
                 "language_code": self.config['assemblyai'].get('language_code', 'fr')
             }
             
-            response = requests.post(transcript_endpoint, json=json_data, headers=headers)
+            response = requests.post(transcript_endpoint, json=json_data, headers=headers, timeout=60)
             
             if response.status_code != 200:
                 logger.error(f"Transcription submission failed: {response.text}")
@@ -142,7 +143,7 @@ class AudioTranscriber:
             # Step 3: Poll for completion
             polling_endpoint = f"https://api.assemblyai.com/v2/transcript/{transcript_id}"
             while True:
-                response = requests.get(polling_endpoint, headers=headers)
+                response = requests.get(polling_endpoint, headers=headers, timeout=30)
                 status = response.json()["status"]
                 
                 if status == "completed":
